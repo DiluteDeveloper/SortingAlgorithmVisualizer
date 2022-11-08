@@ -14,23 +14,20 @@ struct RenderOptions {
 
 class ArrayRenderer {
 	std::vector<glm::fvec2> vertices;
-
 	unsigned int buffers[2] = {0,0};
-
-	std::vector<unsigned int>& arrayObj;
-	unsigned int heightComplexity = 250;
-
 	std::vector<unsigned int> indices;
-
 	unsigned int VAO = 0;
+
+	std::vector<uint16_t>& arrayObj;
+	unsigned int heightComplexity = 250;
 public:
 
-	RenderOptions ro;
-	ArrayRenderer(std::vector<unsigned int>& array, unsigned int heightComplexity) : 
-		arrayObj(array), heightComplexity(heightComplexity) { updateMesh(); }
+	RenderOptions rOptions;
+	ArrayRenderer(std::vector<uint16_t>& arrayObj, uint16_t heightComplexity) : 
+		arrayObj(arrayObj), heightComplexity(heightComplexity) { updateMesh(); }
 
 	void updateMesh();
 	void render();
 
-	void swap(unsigned int a, unsigned int b);
+	void swap(uint16_t a, uint16_t b);
 };

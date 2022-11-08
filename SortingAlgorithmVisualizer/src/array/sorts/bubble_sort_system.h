@@ -7,64 +7,42 @@
 
 class BubbleSortSystem : public SortSystem {
 
-	unsigned int step = 0;
-	unsigned int furthestSwapIndex = (unsigned int)sort.size() - 2;
-	unsigned int iterateFSI = 0;
+	uint16_t step = 0;
 
-	bool hasSwapped = false;
-	bool swapCheck = false;
+	bool swapStatus = false; // Have we swapped yet this iteration? if we get to the end and we havent, its done!
 
 public:
 
-	IterInfo iterate() override {
+	OperationData iterate() override {
+		OperationData oData;
 
-		if (swapCheck) {
-			if (step >= furthestSwapIndex) {
-				si.iterations++;
-				if (!hasSwapped) {
-					si.done = true;
-					return IterInfo{ 0,0 };
-				}
-				hasSwapped = false;
+		while (true) {
 
-				furthestSwapIndex = iterateFSI;
-				iterateFSI = 0;
-				step = 0;
+			if (step >= (sArray.size() - 1) - sData.iterations) // condition true if at end of iteration
+			{
+				sData.iterations++;
+				if (!swapStatus) // done!
+					break;
+				swapStatus = false;
 
-
-			}
-		}
-		else
-			if (step >= sort.size() - 1) {
-				si.iterations++;
-				swapCheck = true;
-				if (!hasSwapped) {
-					si.done = true;
-					return IterInfo{ 0,0 };
-				}
-
-				hasSwapped = false;
-				furthestSwapIndex = iterateFSI;
-				iterateFSI = 0;
 				step = 0;
 			}
 
-		IterInfo i(0,0);
-		si.comparisons++;
-		if (sort[step] > sort[step + 1]) {
-			swap(step, step + 1);
-			hasSwapped = true;
+			sData.comparisons++;
+			if (sArray[step] > sArray[step + 1]) {
 
-			if(step > iterateFSI)
-				iterateFSI = step;
+				swap(step, step + 1);
+				swapStatus = true;
 
-			i.swapFst = step;
-			i.swapSnd = step + 1;
+				oData.swapFst = step; 
+				oData.swapSnd = (step + 1);
+				return oData;
+				
+			}
+			step++;
 		}
-		step++;
-
-		return i;
+		return oData;
 	}
 	
-	BubbleSortSystem(std::vector<unsigned int>& array) : SortSystem(array) {}
+	BubbleSortSystem(std::vector<uint16_t>& sArray) : SortSystem(sArray) { sData.name = "Bubble Sort"; }
 };

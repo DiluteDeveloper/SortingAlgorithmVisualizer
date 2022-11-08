@@ -29,5 +29,5 @@ public:
 	GUISystem(GLFWwindow* window);
 	void update();
 
-	std::unique_ptr<ArraySystem> as;
+	std::unique_ptr<ArraySystem> aSystem;
 };

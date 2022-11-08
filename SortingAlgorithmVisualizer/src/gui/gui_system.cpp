@@ -4,9 +4,6 @@
 #include <imgui/imgui_impl_opengl3.h>
 #include <glfw/glfw3.h>
 
-#include <random>
-#include <format>
-
 #include "array/sorts/bubble_sort_system.h"
 #include "array/sorts/bogo_sort_system.h"
 
@@ -23,7 +20,7 @@ GUISystem::GUISystem(GLFWwindow* window) : window(window) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
-    as = std::make_unique<ArraySystem>(persistentSize, persistentHeightComplexity);
+    aSystem = std::make_unique<ArraySystem>(persistentSize, persistentHeightComplexity);
 
 }
 
@@ -55,9 +52,9 @@ void GUISystem::update() {
         ImGui::Text("ESC to cancel...");
         ImGui::Separator();
 
-        as->sort();
+        aSystem->sort();
 
-        if (as->getSortInfo().done) {
+        if (aSystem->aSorted) {
             sortFinishTime = ImGui::GetTime();
             sorting = false;
         }
@@ -73,12 +70,12 @@ void GUISystem::update() {
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoScrollbar);
 
-    SortInfo s = as->getSortInfo();
+    SortData s = aSystem->getSortData();
 
-    ImGui::Text(std::format("completed: {}", s.done).c_str());
-    ImGui::Text(std::format("swaps: {}", s.swaps).c_str());
-    ImGui::Text(std::format("comparisons: {}", s.comparisons).c_str());
-    ImGui::Text(std::format("iterations: {}", s.iterations).c_str());
+    ImGui::Text("sorted: %s", aSystem->aSorted ? "true" : "false");
+    ImGui::Text("swaps: %d", s.swaps);
+    ImGui::Text("comparisons: %d", s.comparisons);
+    ImGui::Text("iterations: %d", s.iterations);
 
     if(sorting)
         ImGui::Text("time elapsed: %.3f (restarts when sort is cancelled)", ImGui::GetTime() - sortStartTime);
@@ -91,8 +88,6 @@ void GUISystem::update() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-
-static std::string selectedSort = "Bubble Sort";
 void GUISystem::sortingGUI() {
 
     ImGui::Text("Sorting");
@@ -101,7 +96,7 @@ void GUISystem::sortingGUI() {
     ImGui::PushItemWidth(100.0f);
 
     if (ImGui::Button("Sort")) {
-        if (!as->getSortInfo().done) {
+        if (!aSystem->aSorted) {
             sorting = true;
             sortStartTime = ImGui::GetTime();
         }
@@ -110,14 +105,9 @@ void GUISystem::sortingGUI() {
 
 
 
-    if (ImGui::BeginCombo("Sort Type", selectedSort.c_str())) {
+    if (ImGui::BeginCombo("Sort Type", aSystem->getSortData().name.data())) {
         if (ImGui::Button("Bubble Sort")) {
-            as->SetSorter<BubbleSortSystem>();
-            selectedSort = "Bubble Sort";
-        }
-        if (ImGui::Button("Bogo Sort")) {
-            as->SetSorter<BogoSortSystem>();
-            selectedSort = "Bogo Sort";
+            aSystem->SetSorter<BubbleSortSystem>();
         }
 
         ImGui::EndCombo();
@@ -160,11 +150,10 @@ void GUISystem::generationGUI() {
     DragU32("Array Height Complexity", &persistentHeightComplexity, 5, 500);
 
     if (ImGui::Button("Generate Array")) {
-        as.reset();
-        selectedSort = "Bubble Sort";
-        as = std::make_unique<ArraySystem>(persistentSize, persistentHeightComplexity);
-        as->getRenderOptions() = persistentRO;
-        as->updateMesh();
+        aSystem.reset();
+        aSystem = std::make_unique<ArraySystem>(persistentSize, persistentHeightComplexity);
+        aSystem->getRenderOptions() = persistentRO;
+        aSystem->updateMesh(); // remove this and see what happens
     }
 
     ImGui::Separator();
@@ -178,8 +167,8 @@ void GUISystem::renderingGUI() {
 
     ImGui::PushItemWidth(200.0f);
     if (ImGui::DragFloat4("Constraints", &persistentRO.maxRight, 0.1f, -1.0f, 1.0f, "%.2f")) {
-        as->getRenderOptions() = persistentRO;
-        as->updateMesh();
+        aSystem->getRenderOptions() = persistentRO;
+        aSystem->updateMesh();
     }
 
 

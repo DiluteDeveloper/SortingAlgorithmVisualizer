@@ -15,26 +15,29 @@ is 1:1 with its array object
 
 */ 
 class ArraySystem {
-	std::vector<unsigned int> arrayObj;
+	std::vector<uint16_t> arrayObj;
 
-	std::unique_ptr<ArrayRenderer> ar;
-	std::unique_ptr<SortSystem> sortAlg;
+	std::unique_ptr<ArrayRenderer> aRenderer;
+	std::unique_ptr<SortSystem> sortSystem;
 
 
 public:
+
+	bool aSorted = false;
+
 	RenderOptions& getRenderOptions() { 
-		return ar->ro;
+		return aRenderer->rOptions;
 	}
 
-	ArraySystem(unsigned int numElements, unsigned int heightComplexity);
+	ArraySystem(uint16_t numElements, uint16_t heightComplexity);
 
 	template<typename T>
 	void SetSorter() {
-		sortAlg.reset();
-		sortAlg = std::make_unique<T>(arrayObj);
+		sortSystem.reset();
+		sortSystem = std::make_unique<T>(arrayObj);
 	}
-	SortInfo getSortInfo() { return sortAlg->si; }
-	IterInfo sort();
+	SortData getSortData() { return sortSystem->sData; }
+	OperationData sort();
 	void render();
 	void updateMesh();
 };

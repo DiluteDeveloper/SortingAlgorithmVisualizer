@@ -7,7 +7,7 @@
 #include "sort_system.h"
 
 // this sort is a joke
-
+	/*
 class BogoSortSystem : public SortSystem {
 
 	unsigned int step = 0;
@@ -15,7 +15,7 @@ class BogoSortSystem : public SortSystem {
 	bool sorted = true;
 
 public:
-
+	const std::string_view name = "Bogo Sort";
 
 
 	IterInfo iterate() override {
@@ -58,4 +58,4 @@ public:
 	}
 
 	BogoSortSystem(std::vector<unsigned int>& array) : SortSystem(array) {}
-};
+};*/

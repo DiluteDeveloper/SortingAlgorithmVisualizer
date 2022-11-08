@@ -35,16 +35,16 @@ int main(void) {
 
     glfwSwapInterval(1);
 
-    GUISystem gs(window);
+    GUISystem guiSystem(window);
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (gs.as)
-            gs.as->render();
+        if (guiSystem.aSystem)
+            guiSystem.aSystem->render();
 
-        gs.update();
+        guiSystem.update();
         glfwSwapBuffers(window);
 
         glfwPollEvents();

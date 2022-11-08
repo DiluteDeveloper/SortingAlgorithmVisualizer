@@ -6,44 +6,44 @@
 
 #include "rendering/array_renderer.h"
 
-// move 'done' to array_system, different sorters will lose that info
 
-extern std::mt19937 rng;
-struct SortInfo {
-	unsigned int swaps = 0;
-	unsigned int comparisons = 0;
-	unsigned int iterations = 0;
+struct SortData {
+	uint64_t iterations = 0;
+	uint64_t swaps = 0;
+	uint64_t comparisons = 0;
 
-	bool done = false;
+	std::string_view name = "Default sort";
 };
 
-struct IterInfo {
-	unsigned int swapFst = 0, swapSnd = 0;
+// bool and if operator overloaded for checking if array was sorted on this operation
+struct OperationData {
+	uint16_t swapFst = 0, swapSnd = 0;
 
-	IterInfo(unsigned int swapFst, unsigned int swapSnd) : swapFst(swapFst), swapSnd(swapSnd) {}
+	OperationData(uint16_t swapFst, uint16_t swapSnd) : swapFst(swapFst), swapSnd(swapSnd) {}
+	OperationData() = default;
 
 	operator bool() const {
-		return (swapFst != swapSnd);
+		return (swapFst == swapSnd);
 	}
 };
 
 class SortSystem {
 protected:
-	std::vector<unsigned int>& sort;
+	std::vector<uint16_t>& sArray;
 
-	void swap(unsigned int a, unsigned int b) {
-		si.swaps++;
+	void swap(uint16_t a, uint16_t b) {
+		sData.swaps++;
 
-		unsigned int temp = sort[a];
-		sort[a] = sort[b];
-		sort[b] = temp;
+		uint16_t temp = sArray[a];
+		sArray[a] = sArray[b];
+		sArray[b] = temp;
 	}
 
 
 public:
-	virtual IterInfo iterate() { si.done = true; return IterInfo{ 0,0 }; };
+	virtual OperationData iterate() = 0;
 
-	SortInfo si;
-	SortSystem(std::vector<unsigned int>& array) : sort(array) { }
+	SortData sData;
+	SortSystem(std::vector<uint16_t>& sArray) : sArray(sArray) { }
 
 };
