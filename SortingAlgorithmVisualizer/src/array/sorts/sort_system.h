@@ -4,46 +4,50 @@
 #include <imgui/imgui.h>
 #include <random>
 
-#include "rendering/array_renderer.h"
-
 
 struct SortData {
 	uint64_t iterations = 0;
 	uint64_t swaps = 0;
 	uint64_t comparisons = 0;
 
-	std::string_view name = "Default sort";
+	const std::string_view name = "Default sort";
+
+	SortData(std::string_view name) : name(name) {}
+
+	void reset() {
+		iterations = 0;
+		swaps = 0;
+		comparisons = 0;
+	}
 };
 
 // bool and if operator overloaded for checking if array was sorted on this operation
-struct OperationData {
-	uint16_t swapFst = 0, swapSnd = 0;
+struct ComparisonData {
+	uint16_t a = 0, b = 0;
+	uint16_t prevA = 0, prevB = 0;
 
-	OperationData(uint16_t swapFst, uint16_t swapSnd) : swapFst(swapFst), swapSnd(swapSnd) {}
-	OperationData() = default;
+	enum class Status {
+		SWAP = 0,
+		COMPARISON = 1,
+		DONE = 2
+	} status = Status::DONE;
 
-	operator bool() const {
-		return (swapFst == swapSnd);
-	}
+	ComparisonData(uint16_t a, uint16_t b, uint16_t prevA, uint16_t prevB, ComparisonData::Status status)
+		: a(a), b(b), prevA(prevA), prevB(prevB), status(status) { }
+
+	ComparisonData() = default;
 };
 
 class SortSystem {
 protected:
-	std::vector<uint16_t>& sArray;
-
-	void swap(uint16_t a, uint16_t b) {
-		sData.swaps++;
-
-		uint16_t temp = sArray[a];
-		sArray[a] = sArray[b];
-		sArray[b] = temp;
-	}
-
+	std::vector<float>& sArray;
 
 public:
-	virtual OperationData iterate() = 0;
+	virtual ComparisonData iterate() = 0;
 
 	SortData sData;
-	SortSystem(std::vector<uint16_t>& sArray) : sArray(sArray) { }
+	SortSystem(std::vector<float>& sArray, const std::string_view& name) : sArray(sArray), sData(name) { }
 
+	// Setup as if a whole new array came in
+	virtual void reset() = 0;
 };

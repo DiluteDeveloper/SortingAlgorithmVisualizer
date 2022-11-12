@@ -9,11 +9,9 @@ struct GLFWwindow;
 
 class GUISystem {
 
-	unsigned int persistentSize = 50;
-	unsigned int persistentHeightComplexity = 100;
-	RenderOptions persistentRO;
+	unsigned int persistentSize = 150;
 
-
+	bool sorted = true;
 	bool sorting = false;
 	double sortStartTime = 0.0f;
 	double sortFinishTime = 0.0f;
@@ -29,5 +27,5 @@ public:
 	GUISystem(GLFWwindow* window);
 	void update();
 
-	std::unique_ptr<ArraySystem> aSystem;
+	ArraySystem aSystem;
 };

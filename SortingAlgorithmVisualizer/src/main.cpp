@@ -1,11 +1,9 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
-#include "rendering/array_renderer.h"
-
 #include <tuple>
 
-#include "rendering/shader_program.h"
+#include "rendering/2D/renderer.h"
 
 #include "gui/gui_system.h"
 
@@ -27,22 +25,16 @@ int main(void) {
 
     if (!gladLoadGL()) return -1;
 
-    unsigned int vertexShader = CreateShader("res/shaders/shader.vs", GL_VERTEX_SHADER);
-    unsigned int fragmentShader = CreateShader("res/shaders/shader.fs", GL_FRAGMENT_SHADER);
+    glfwSwapInterval(0);
 
-    unsigned int shaderProgram = CreateShaderProgram(vertexShader, fragmentShader);
-    glUseProgram(shaderProgram);
-
-    glfwSwapInterval(1);
-
+    Renderer2D r2D;
     GUISystem guiSystem(window);
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (guiSystem.aSystem)
-            guiSystem.aSystem->render();
+        r2D.renderArrayMesh(guiSystem.aSystem.mesh);
 
         guiSystem.update();
         glfwSwapBuffers(window);

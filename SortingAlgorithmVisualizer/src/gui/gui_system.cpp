@@ -20,7 +20,7 @@ GUISystem::GUISystem(GLFWwindow* window) : window(window) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
-    aSystem = std::make_unique<ArraySystem>(persistentSize, persistentHeightComplexity);
+    aSystem.generateArray(persistentSize);
 
 }
 
@@ -52,9 +52,10 @@ void GUISystem::update() {
         ImGui::Text("ESC to cancel...");
         ImGui::Separator();
 
-        aSystem->sort();
+        if (aSystem.sort().status == ComparisonData::Status::DONE)
+            sorted = true;
 
-        if (aSystem->aSorted) {
+        if (sorted) {
             sortFinishTime = ImGui::GetTime();
             sorting = false;
         }
@@ -70,9 +71,9 @@ void GUISystem::update() {
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoScrollbar);
 
-    SortData s = aSystem->getSortData();
+    SortData s = aSystem.getSortData();
 
-    ImGui::Text("sorted: %s", aSystem->aSorted ? "true" : "false");
+    ImGui::Text("sorted: %s", sorted ? "true" : "false");
     ImGui::Text("swaps: %d", s.swaps);
     ImGui::Text("comparisons: %d", s.comparisons);
     ImGui::Text("iterations: %d", s.iterations);
@@ -90,13 +91,12 @@ void GUISystem::update() {
 
 void GUISystem::sortingGUI() {
 
-    ImGui::Text("Sorting");
     ImGui::Separator();
 
     ImGui::PushItemWidth(100.0f);
 
     if (ImGui::Button("Sort")) {
-        if (!aSystem->aSorted) {
+        if (!sorted) {
             sorting = true;
             sortStartTime = ImGui::GetTime();
         }
@@ -105,9 +105,9 @@ void GUISystem::sortingGUI() {
 
 
 
-    if (ImGui::BeginCombo("Sort Type", aSystem->getSortData().name.data())) {
+    if (ImGui::BeginCombo("Sort Type", aSystem.getSortData().name.data())) {
         if (ImGui::Button("Bubble Sort")) {
-            aSystem->SetSorter<BubbleSortSystem>();
+            aSystem.SetSorter<BubbleSortSystem>();
         }
 
         ImGui::EndCombo();
@@ -122,7 +122,7 @@ void GUISystem::miscGUI() {
     ImGui::Text("Miscellaneous");
     ImGui::Separator();
 
-    static std::string sync = "On";
+    static std::string sync = "Off";
 
     if (ImGui::BeginCombo("V Sync", sync.c_str())) {
         if (ImGui::Button("On")) {
@@ -146,14 +146,13 @@ void GUISystem::generationGUI() {
     ImGui::Separator();
 
     ImGui::PushItemWidth(100.0f);
-    DragU32("Array Elements", &persistentSize, 5, 500);
-    DragU32("Array Height Complexity", &persistentHeightComplexity, 5, 500);
-
-    if (ImGui::Button("Generate Array")) {
-        aSystem.reset();
-        aSystem = std::make_unique<ArraySystem>(persistentSize, persistentHeightComplexity);
-        aSystem->getRenderOptions() = persistentRO;
-        aSystem->updateMesh(); // remove this and see what happens
+    if (DragU32("Array Elements", &persistentSize, 5, 500)) {
+        aSystem.generateArray(persistentSize);
+        sorted = true;
+    }
+    if (ImGui::Button("Shuffle")) {
+        aSystem.shuffle();
+        sorted = false;
     }
 
     ImGui::Separator();
@@ -166,10 +165,10 @@ void GUISystem::renderingGUI() {
     ImGui::Separator();
 
     ImGui::PushItemWidth(200.0f);
-    if (ImGui::DragFloat4("Constraints", &persistentRO.maxRight, 0.1f, -1.0f, 1.0f, "%.2f")) {
-        aSystem->getRenderOptions() = persistentRO;
-        aSystem->updateMesh();
-    }
+   // if (ImGui::DragFloat4("Constraints", &persistentRO.maxRight, 0.1f, -1.0f, 1.0f, "%.2f")) {
+    //    aSystem->getRenderOptions() = persistentRO;
+   //     aSystem->updateMesh();
+   // }
 
 
     ImGui::Separator();

@@ -1,37 +1,51 @@
+#include <random>
+
 #include "array/array_system.h"
 
 #include "sorts/bubble_sort_system.h"
-#include "random/random.h"
 
-ArraySystem::ArraySystem(uint16_t numElements, uint16_t heightComplexity) {
+void ArraySystem::generateArray(uint16_t numElements) {
 
-    std::uniform_int_distribution<uint16_t> gen(1, heightComplexity); // uniform, unbiased
-    for (size_t i = 0; i < numElements; i++)
+    sArray.clear();
+    float dist = 2 / (static_cast<float>(numElements) + 2);
+    float bottomValue = -1 + dist;
+    float topValue = 1 - dist;
+
+    sArray.reserve(numElements);
+    for (float i = bottomValue; i < topValue; i += dist)
     {
-
-        uint16_t r = gen(rng);
-        arrayObj.push_back(r);
+        sArray.push_back(i);
     }
-
-    aRenderer = std::make_unique<ArrayRenderer>(arrayObj, heightComplexity);
-    sortSystem = std::make_unique<BubbleSortSystem>(arrayObj);
+    mesh.generateMesh(sArray);
+    sortSystem = std::make_unique<BubbleSortSystem>(sArray);
 }
-OperationData ArraySystem::sort() {
+std::mt19937 rng;
+void ArraySystem::shuffle() {
 
-    OperationData it;
-    if (!aSorted) { // if not sorted
-        it = sortSystem->iterate();
-        if (!(aSorted = static_cast<bool>(it))) {
-            aRenderer->swap(it.swapFst, it.swapSnd);
-        }
+
+    std::uniform_int_distribution<unsigned int> gen(0, sArray.size() - 1);
+    for (size_t i = 0; i < sArray.size(); i++)
+    {
+        unsigned int r = i;
+        while (r == i)
+            r = gen(rng);
+        float temp = sArray[i];
+        sArray[i] = sArray[r];
+        sArray[r] = temp;
     }
+    mesh.generateMesh(sArray);
+    sortSystem->reset();
 
+}
+ComparisonData ArraySystem::sort() {
+
+    ComparisonData it = sortSystem->iterate();
+    if (it.status == ComparisonData::Status::SWAP) {
+        float temp = sArray[it.a];
+        sArray[it.a] = sArray[it.b];
+        sArray[it.b] = temp;
+    }
+    mesh.comparison(it);
     return it;
 
-}
-void ArraySystem::render() {
-    aRenderer->render();
-}
-void ArraySystem::updateMesh() {
-    aRenderer->updateMesh();
 }

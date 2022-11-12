@@ -20,6 +20,8 @@ unsigned int CreateShader(const std::string& filePath, const int type) {
 
 		char infoLog[512];
 		glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
+
+		std::cout << infoLog << std::endl;
 		throw std::exception();
 	}
 	return shaderID;
@@ -43,6 +45,7 @@ unsigned int CreateShaderProgram(const unsigned int vertexShader, const unsigned
 		char infoLog[512];
 		glGetProgramInfoLog(ID, 512, nullptr, infoLog);
 
+		std::cout << infoLog << std::endl;
 		throw std::exception();
 	}
 	glDeleteShader(vertexShader);

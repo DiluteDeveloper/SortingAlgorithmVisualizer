@@ -1,10 +1,11 @@
 #pragma once
 
 #include "sorts/sort_system.h"
-#include "rendering/array_renderer.h"
 
 #include <memory>
 #include <iostream>
+
+#include "rendering/2D/array_mesh.h"
 
 /* Responsibilities
 
@@ -15,29 +16,24 @@ is 1:1 with its array object
 
 */ 
 class ArraySystem {
-	std::vector<uint16_t> arrayObj;
+	std::vector<float> sArray;
+	bool done = false;
 
-	std::unique_ptr<ArrayRenderer> aRenderer;
 	std::unique_ptr<SortSystem> sortSystem;
-
-
 public:
 
-	bool aSorted = false;
+	ArrayMesh2D mesh;
 
-	RenderOptions& getRenderOptions() { 
-		return aRenderer->rOptions;
-	}
-
-	ArraySystem(uint16_t numElements, uint16_t heightComplexity);
+	ArraySystem() = default;
 
 	template<typename T>
 	void SetSorter() {
 		sortSystem.reset();
-		sortSystem = std::make_unique<T>(arrayObj);
+		sortSystem = std::make_unique<T>(sArray);
 	}
 	SortData getSortData() { return sortSystem->sData; }
-	OperationData sort();
-	void render();
-	void updateMesh();
+	ComparisonData sort();
+
+	void shuffle();
+	void generateArray(uint16_t numElements);
 };
