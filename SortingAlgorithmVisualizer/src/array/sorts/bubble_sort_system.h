@@ -49,6 +49,8 @@ public:
 	void reset() override {
 		step = 0;
 		swapStatus = false;
+		prevA = 0;
+		prevB = 0;
 		sData.reset();
 	}
 };

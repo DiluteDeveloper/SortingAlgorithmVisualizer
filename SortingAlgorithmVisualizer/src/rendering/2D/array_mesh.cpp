@@ -1,7 +1,6 @@
 #include "array_mesh.h"
 
 #include <glad/glad.h>
-// <iostream>
 
 void ArrayMesh2D::generateMesh(std::vector<float> sArray) {
 	glDeleteVertexArrays(1, &VAO);
@@ -13,7 +12,6 @@ void ArrayMesh2D::generateMesh(std::vector<float> sArray) {
 	std::vector<unsigned int> indices;
 	for (size_t i = 0; i < sArray.size(); i++)
 	{
-		//std::cout << sArray[i] << std::endl;
 		float blockX = (i * horiScale) - 1;
 		float marginX = ((i * horiScale) + horiScale) - 1;
 		vertices.push_back({ {blockX, -1} }); // bottom left

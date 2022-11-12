@@ -20,6 +20,7 @@ GUISystem::GUISystem(GLFWwindow* window) : window(window) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
+    aSystem.SetSorter<BubbleSortSystem>();
     aSystem.generateArray(persistentSize);
 
 }
@@ -109,7 +110,9 @@ void GUISystem::sortingGUI() {
         if (ImGui::Button("Bubble Sort")) {
             aSystem.SetSorter<BubbleSortSystem>();
         }
-
+        if (ImGui::Button("Bogo Sort")) {
+            aSystem.SetSorter<BogoSortSystem>();
+        }
         ImGui::EndCombo();
     }
 
@@ -146,7 +149,7 @@ void GUISystem::generationGUI() {
     ImGui::Separator();
 
     ImGui::PushItemWidth(100.0f);
-    if (DragU32("Array Elements", &persistentSize, 5, 500)) {
+    if (DragU32("Array Elements", &persistentSize, 5, 5000)) {
         aSystem.generateArray(persistentSize);
         sorted = true;
     }

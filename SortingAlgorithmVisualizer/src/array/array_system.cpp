@@ -17,7 +17,7 @@ void ArraySystem::generateArray(uint16_t numElements) {
         sArray.push_back(i);
     }
     mesh.generateMesh(sArray);
-    sortSystem = std::make_unique<BubbleSortSystem>(sArray);
+    sortSystem->reset();
 }
 std::mt19937 rng;
 void ArraySystem::shuffle() {
