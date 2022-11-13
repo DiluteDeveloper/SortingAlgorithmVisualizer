@@ -6,6 +6,8 @@
 
 #include "array/sorts/bubble_sort_system.h"
 #include "array/sorts/bogo_sort_system.h"
+#include "array/sorts/insertion_sort_system.h"
+#include "array/sorts/selection_sort_system.h"
 
 
 #include "helper.h"
@@ -74,10 +76,10 @@ void GUISystem::update() {
 
     SortData s = aSystem.getSortData();
 
+    ImGui::Text("sort: %s", s.name.data());
     ImGui::Text("sorted: %s", sorted ? "true" : "false");
     ImGui::Text("swaps: %d", s.swaps);
-    ImGui::Text("comparisons: %d", s.comparisons);
-    ImGui::Text("iterations: %d", s.iterations);
+    ImGui::Text("array accesses: %d", s.array_accesses);
 
     if(sorting)
         ImGui::Text("time elapsed: %.3f (restarts when sort is cancelled)", ImGui::GetTime() - sortStartTime);
@@ -91,8 +93,6 @@ void GUISystem::update() {
 }
 
 void GUISystem::sortingGUI() {
-
-    ImGui::Separator();
 
     ImGui::PushItemWidth(100.0f);
 
@@ -112,6 +112,12 @@ void GUISystem::sortingGUI() {
         }
         if (ImGui::Button("Bogo Sort")) {
             aSystem.SetSorter<BogoSortSystem>();
+        }
+        if (ImGui::Button("Insertion Sort")) {
+            aSystem.SetSorter<InsertionSortSystem>();
+        }
+        if (ImGui::Button("Selection Sort")) {
+            aSystem.SetSorter<SelectionSortSystem>();
         }
         ImGui::EndCombo();
     }
@@ -140,7 +146,6 @@ void GUISystem::miscGUI() {
         ImGui::EndCombo();
     }
 
-    ImGui::Separator();
 }
 
 void GUISystem::generationGUI() {
@@ -168,11 +173,6 @@ void GUISystem::renderingGUI() {
     ImGui::Separator();
 
     ImGui::PushItemWidth(200.0f);
-   // if (ImGui::DragFloat4("Constraints", &persistentRO.maxRight, 0.1f, -1.0f, 1.0f, "%.2f")) {
-    //    aSystem->getRenderOptions() = persistentRO;
-   //     aSystem->updateMesh();
-   // }
-
 
     ImGui::Separator();
     ImGui::PopItemWidth();

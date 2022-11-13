@@ -1,12 +1,9 @@
 #pragma once
-
-#include <vector>
-#include <iostream>
 #include <random>
 
 #include "sort_system.h"
 
-std::mt19937 rng2;
+
 // this sort is a joke
 class BogoSortSystem : public SortSystem {
 
@@ -14,7 +11,7 @@ class BogoSortSystem : public SortSystem {
 	bool shuffling = false;
 	uint16_t prevA = 0;
 	uint16_t prevB = 0;
-
+	std::mt19937 rng;
 	bool swapStatus = false;
 
 public:
@@ -23,12 +20,11 @@ public:
 		ComparisonData cd;
 		cd.prevA = prevA;
 		cd.prevB = prevB;
-		sData.comparisons++;
 		if (shuffling) {
 			cd.status = ComparisonData::Status::SWAP;
 			sData.swaps++;
 			std::uniform_int_distribution<unsigned int> gen(0, sArray.size() - 1); // uniform, unbiased
-			unsigned int rIndex = gen(rng2);
+			unsigned int rIndex = gen(rng);
 			cd.a = step;
 			cd.b = rIndex;
 			prevA = step;
@@ -36,7 +32,6 @@ public:
 			if (step >= sArray.size() - 1) {
 				step = 0;
 				shuffling = false;
-				sData.iterations++;
 				return cd;
 			}
 			step++;
@@ -50,11 +45,13 @@ public:
 			prevA = cd.a;
 			prevB = cd.b;
 
-			if (sArray[step] > sArray[step + 1])
+			if (sArray[step] > sArray[step + 1]) {
 				swapStatus = true;
+				sData.array_accesses += 2;
+			}
+
 
 			if (step >= sArray.size() - 2) {
-				sData.iterations++;
 				if (!swapStatus) {
 					cd.status = ComparisonData::Status::DONE;
 				}
@@ -62,6 +59,7 @@ public:
 					swapStatus = false;
 					step = 0;
 					shuffling = true;
+					rng.seed(time(nullptr));
 
 				}
 			}

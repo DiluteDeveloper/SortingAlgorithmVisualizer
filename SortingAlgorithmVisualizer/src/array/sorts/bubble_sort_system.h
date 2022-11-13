@@ -1,8 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <iostream>
-
 #include "sort_system.h"
 
 class BubbleSortSystem : public SortSystem {
@@ -11,24 +8,28 @@ class BubbleSortSystem : public SortSystem {
 	uint16_t prevA = 0;
 	uint16_t prevB = 0;
 
+	uint16_t iterations = 0;
+
 	bool swapStatus = false; // Have we swapped yet this iteration? if we get to the end and we havent, its done!
 
 public:
 
 	ComparisonData iterate() override {
 		ComparisonData::Status status = ComparisonData::Status::DONE;
-		if (step >= (sArray.size() - 1) - sData.iterations) // condition true if at end of iteration
+		if (step >= (sArray.size() - 1) - iterations) // condition true if at end of iteration
 		{
-			sData.iterations++;
-			if (!swapStatus) // done!
+			iterations++;
+			if (!swapStatus) {// done!
 				goto conclusion;
+			}
+
+
 			swapStatus = false;
 
 			step = 0;
 		}
-		sData.comparisons++;
 		if (sArray[step] > sArray[step + 1]) {
-
+			sData.array_accesses += 2;
 			swapStatus = true;
 			sData.swaps++;
 
@@ -51,6 +52,7 @@ public:
 		swapStatus = false;
 		prevA = 0;
 		prevB = 0;
+		iterations = 0;
 		sData.reset();
 	}
 };

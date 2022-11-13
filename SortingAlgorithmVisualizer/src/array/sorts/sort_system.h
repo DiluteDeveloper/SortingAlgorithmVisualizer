@@ -6,18 +6,16 @@
 
 
 struct SortData {
-	uint64_t iterations = 0;
 	uint64_t swaps = 0;
-	uint64_t comparisons = 0;
+	uint64_t array_accesses = 0;
 
 	const std::string_view name = "Default sort";
 
 	SortData(std::string_view name) : name(name) {}
 
 	void reset() {
-		iterations = 0;
+		array_accesses = 0;
 		swaps = 0;
-		comparisons = 0;
 	}
 };
 

@@ -21,7 +21,7 @@ void ArraySystem::generateArray(uint16_t numElements) {
 }
 std::mt19937 rng;
 void ArraySystem::shuffle() {
-
+    rng.seed(time(nullptr));
 
     std::uniform_int_distribution<unsigned int> gen(0, sArray.size() - 1);
     for (size_t i = 0; i < sArray.size(); i++)
