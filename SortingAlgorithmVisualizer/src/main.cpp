@@ -30,13 +30,30 @@ int main(void) {
     Renderer2D r2D;
     GUISystem guiSystem(window);
 
+    double previousTime = glfwGetTime();
+    int frameCount = 0;
+
+    bool guiHide = false;
+    bool notHeld = true;
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     while (!glfwWindowShouldClose(window)) {
+
         glClear(GL_COLOR_BUFFER_BIT);
 
         r2D.renderArrayMesh(guiSystem.aSystem.mesh);
 
-        guiSystem.update();
+        if (glfwGetKey(window, GLFW_KEY_H)) {
+            if (notHeld) {
+                guiHide = !guiHide;
+                notHeld = false;
+            }
+        }
+        else notHeld = true;
+            
+        if (!guiHide)
+            guiSystem.update();
+          
         glfwSwapBuffers(window);
 
         glfwPollEvents();

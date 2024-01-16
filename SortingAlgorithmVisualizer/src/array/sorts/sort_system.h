@@ -8,6 +8,8 @@
 struct SortData {
 	uint64_t swaps = 0;
 	uint64_t array_accesses = 0;
+	
+	double beginTime = ImGui::GetTime();
 
 	const std::string_view name = "Default sort";
 
@@ -19,21 +21,22 @@ struct SortData {
 	}
 };
 
-// bool and if operator overloaded for checking if array was sorted on this operation
+enum class SwapStatus {
+	SWAP = 0,
+	COMPARISON = 1,
+	DONE = 2
+};
+
+
 struct ComparisonData {
-	uint16_t a = 0, b = 0;
-	uint16_t prevA = 0, prevB = 0;
-
-	enum class Status {
-		SWAP = 0,
-		COMPARISON = 1,
-		DONE = 2
-	} status = Status::DONE;
-
-	ComparisonData(uint16_t a, uint16_t b, uint16_t prevA, uint16_t prevB, ComparisonData::Status status)
-		: a(a), b(b), prevA(prevA), prevB(prevB), status(status) { }
+	uint16_t a = 0, b = 0, c = 0;
+	bool paintStatus = false;
+	SwapStatus status;
 
 	ComparisonData() = default;
+
+	void set(uint16_t in_a, uint16_t in_b) { a = in_a; b = in_b; }
+	void set(uint16_t in_a, uint16_t in_b, uint16_t in_c) { a = in_a; b = in_b; c = in_c; }
 };
 
 class SortSystem {

@@ -19,6 +19,13 @@ class ArrayMesh2D {
 	uint16_t indicesLen = 0;
 public:
 
+	enum class ArrayMeshRenderMode {
+		HARD,
+		SMOOTH
+	};
+
+	ArrayMeshRenderMode renderMode = ArrayMeshRenderMode::HARD;
+
 	ArrayMesh2D() = default;
 
 	void generateMesh(std::vector<float> sArray);

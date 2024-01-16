@@ -5,43 +5,35 @@
 class BubbleSortSystem : public SortSystem {
 
 	uint16_t step = 0;
-	uint16_t prevA = 0;
-	uint16_t prevB = 0;
-
-	uint16_t iterations = 0;
-
-	bool swapStatus = false; // Have we swapped yet this iteration? if we get to the end and we havent, its done!
+	uint16_t iteration = 0;
 
 public:
 
+
+	// Rewriting from scratch;
 	ComparisonData iterate() override {
-		ComparisonData::Status status = ComparisonData::Status::DONE;
-		if (step >= (sArray.size() - 1) - iterations) // condition true if at end of iteration
-		{
-			iterations++;
-			if (!swapStatus) {// done!
-				goto conclusion;
-			}
-
-
-			swapStatus = false;
-
-			step = 0;
+		ComparisonData cd;
+		if (iteration == sArray.size() - 1) {
+			cd.status = SwapStatus::DONE;
+			return cd;
 		}
+		else if (step == (sArray.size() - 1) - iteration) {
+			step = 0;
+			iteration++;
+		}
+
+
+		cd.set(step, static_cast<uint16_t>(step + 1));
+
+		sData.array_accesses += 2;
 		if (sArray[step] > sArray[step + 1]) {
-			sData.array_accesses += 2;
-			swapStatus = true;
+			cd.status = SwapStatus::SWAP;
 			sData.swaps++;
 
+		}
 
-			status = ComparisonData::Status::SWAP;
-		} else
-			status = ComparisonData::Status::COMPARISON;
+		else cd.status = SwapStatus::COMPARISON;
 
-	conclusion:
-		ComparisonData cd(step, static_cast<uint16_t>(step + 1), prevA, prevB, status);
-		prevA = cd.a;
-		prevB = cd.b;
 		step++;
 		return cd;
 	}
@@ -49,10 +41,7 @@ public:
 	BubbleSortSystem(std::vector<float>& sArray) : SortSystem(sArray, "Bubble Sort") {  }
 	void reset() override {
 		step = 0;
-		swapStatus = false;
-		prevA = 0;
-		prevB = 0;
-		iterations = 0;
+		iteration = 0;
 		sData.reset();
 	}
 };

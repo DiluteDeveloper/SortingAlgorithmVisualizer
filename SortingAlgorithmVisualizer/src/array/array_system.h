@@ -16,6 +16,7 @@ is 1:1 with its array object
 
 */ 
 class ArraySystem {
+	friend class GUISystem;
 	std::vector<float> sArray;
 	bool done = false;
 

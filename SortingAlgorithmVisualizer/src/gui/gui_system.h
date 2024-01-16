@@ -9,12 +9,14 @@ struct GLFWwindow;
 
 class GUISystem {
 
-	unsigned int persistentSize = 150;
+	unsigned int persistentSize = 50;
+	double fpsLimit = 1.0 / 20.0;
 
 	bool sorted = true;
 	bool sorting = false;
-	double sortStartTime = 0.0f;
-	double sortFinishTime = 0.0f;
+
+	bool showSortUI = true;
+	bool showMouseDuringSort = true;
 
 	GLFWwindow* window;
 

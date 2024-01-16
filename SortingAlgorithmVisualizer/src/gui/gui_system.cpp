@@ -5,13 +5,18 @@
 #include <glfw/glfw3.h>
 
 #include "array/sorts/bubble_sort_system.h"
-#include "array/sorts/bogo_sort_system.h"
 #include "array/sorts/insertion_sort_system.h"
-#include "array/sorts/selection_sort_system.h"
+#include "array/sorts/gnome_sort_system.h"
+#include "array/sorts/cycle_sort_system.h"
 
 
 #include "helper.h"
 
+#include <format>
+
+
+double t = 0, t0 = 0, fps = 0;
+int frames = 0;
 
 
 GUISystem::GUISystem(GLFWwindow* window) : window(window) {
@@ -25,7 +30,13 @@ GUISystem::GUISystem(GLFWwindow* window) : window(window) {
     aSystem.SetSorter<BubbleSortSystem>();
     aSystem.generateArray(persistentSize);
 
+    t0 = glfwGetTime();
+
 }
+
+float realFPS = 20;
+double lastUpdateTime = 0;  // number of seconds since the last loop
+double lastFrameTime = 0;
 
 void GUISystem::update() {
     ImGui_ImplOpenGL3_NewFrame();
@@ -39,54 +50,73 @@ void GUISystem::update() {
         ImGuiWindowFlags_NoBackground |
         ImGuiWindowFlags_NoScrollbar);
 
+    double now = glfwGetTime();
+    double deltaTime = now - lastUpdateTime;
+
     if (!sorting) {
-        sortingGUI();
-        generationGUI();
-        renderingGUI();
-        miscGUI();
+        
+            sortingGUI();
+            generationGUI();
+            renderingGUI();
+            miscGUI();
+
     }
     else {
+
+
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+            if (showMouseDuringSort == false)
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             sorting = false;
-            sortFinishTime = ImGui::GetTime();
             goto exit_sort;
         }
 
-        ImGui::Text("ESC to cancel...");
-        ImGui::Separator();
-
-        if (aSystem.sort().status == ComparisonData::Status::DONE)
-            sorted = true;
-
-        if (sorted) {
-            sortFinishTime = ImGui::GetTime();
-            sorting = false;
+        if (showSortUI) {
+            ImGui::Text("ESC to cancel...");
+            ImGui::Separator();
         }
+
+        if ((now - lastFrameTime) >= fpsLimit)
+        {
+            if (aSystem.sort().status == SwapStatus::DONE) {
+
+                if (showMouseDuringSort == false)
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                sorting = false;
+                sorted = true;
+            }
+
+            lastFrameTime = now;
+        }
+
+        lastUpdateTime = now;
+
+
     }
     exit_sort:
         
     ImGui::End();
 
-    ImGui::Begin("Statistics", nullptr,
-        ImGuiWindowFlags_NoBackground |
-        ImGuiWindowFlags_NoTitleBar |
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoScrollbar);
+    if (showSortUI) {
 
-    SortData s = aSystem.getSortData();
+        ImGui::Begin("Statistics", nullptr,
+            ImGuiWindowFlags_NoBackground |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar);
 
-    ImGui::Text("sort: %s", s.name.data());
-    ImGui::Text("sorted: %s", sorted ? "true" : "false");
-    ImGui::Text("swaps: %d", s.swaps);
-    ImGui::Text("array accesses: %d", s.array_accesses);
+        SortData s = aSystem.getSortData();
 
-    if(sorting)
-        ImGui::Text("time elapsed: %.3f (restarts when sort is cancelled)", ImGui::GetTime() - sortStartTime);
-    else
-        ImGui::Text("time elapsed: %.3f (restarts when sort is cancelled)", sortFinishTime - sortStartTime);
 
-    ImGui::End();
+        ImGui::Text("sort: %s", s.name.data());
+        ImGui::Text("sorted: %s", sorted ? "true" : "false");
+        ImGui::Text("swaps: %d", s.swaps);
+        ImGui::Text("array accesses: %d", s.array_accesses);
+
+        ImGui::End();
+    }
+
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -96,28 +126,30 @@ void GUISystem::sortingGUI() {
 
     ImGui::PushItemWidth(100.0f);
 
-    if (ImGui::Button("Sort")) {
+    if (ImGui::Button("Sort") ) {
         if (!sorted) {
+            if (showMouseDuringSort == false) {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
+
             sorting = true;
-            sortStartTime = ImGui::GetTime();
         }
 
     }
-
 
 
     if (ImGui::BeginCombo("Sort Type", aSystem.getSortData().name.data())) {
         if (ImGui::Button("Bubble Sort")) {
             aSystem.SetSorter<BubbleSortSystem>();
         }
-        if (ImGui::Button("Bogo Sort")) {
-            aSystem.SetSorter<BogoSortSystem>();
-        }
         if (ImGui::Button("Insertion Sort")) {
             aSystem.SetSorter<InsertionSortSystem>();
         }
-        if (ImGui::Button("Selection Sort")) {
-            aSystem.SetSorter<SelectionSortSystem>();
+        if (ImGui::Button("Gnome Sort")) {
+            aSystem.SetSorter<GnomeSortSystem>();
+        }
+        if (ImGui::Button("Cycle Sort")) {
+            aSystem.SetSorter<CycleSortSystem>();
         }
         ImGui::EndCombo();
     }
@@ -126,24 +158,31 @@ void GUISystem::sortingGUI() {
     ImGui::PopItemWidth();
 
 }
-
 void GUISystem::miscGUI() {
     ImGui::Text("Miscellaneous");
     ImGui::Separator();
+    
+    if (ImGui::DragFloat("Simulation Framerate", &realFPS, 2, 0.1f, 2000, "%.1f", ImGuiSliderFlags_Logarithmic)) {
+        fpsLimit = 1 / realFPS;
+    }
 
-    static std::string sync = "Off";
-
-    if (ImGui::BeginCombo("V Sync", sync.c_str())) {
-        if (ImGui::Button("On")) {
-            glfwSwapInterval(1);
-            sync = "On";
+    if (ImGui::Button(std::format("Show sorting UI statistics({})", showSortUI).c_str())) {
+        showSortUI = !showSortUI;
+    }
+    if (ImGui::Button(std::format("Show mouse during sort({})", showMouseDuringSort).c_str())) {
+        showMouseDuringSort = !showMouseDuringSort;
+    }
+    if (aSystem.mesh.renderMode == ArrayMesh2D::ArrayMeshRenderMode::HARD) {
+        if (ImGui::Button("Rendering mode(HARD)")) {
+            aSystem.mesh.renderMode = ArrayMesh2D::ArrayMeshRenderMode::SMOOTH;
+            aSystem.mesh.generateMesh(aSystem.sArray);
         }
-        if (ImGui::Button("Off")) {
-            glfwSwapInterval(0);
-            sync = "Off";
+    }
+    else if (aSystem.mesh.renderMode == ArrayMesh2D::ArrayMeshRenderMode::SMOOTH) {
+        if (ImGui::Button("Rendering mode(SMOOTH)")) {
+            aSystem.mesh.renderMode = ArrayMesh2D::ArrayMeshRenderMode::HARD;
+            aSystem.mesh.generateMesh(aSystem.sArray);
         }
-
-        ImGui::EndCombo();
     }
 
 }

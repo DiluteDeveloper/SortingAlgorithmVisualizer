@@ -7,12 +7,9 @@
 void ArraySystem::generateArray(uint16_t numElements) {
 
     sArray.clear();
-    float dist = 2 / (static_cast<float>(numElements) + 2);
-    float bottomValue = -1 + dist;
-    float topValue = 1 - dist;
 
     sArray.reserve(numElements);
-    for (float i = bottomValue; i < topValue; i += dist)
+    for (unsigned int i = 0; i < numElements; i++)
     {
         sArray.push_back(i);
     }
@@ -40,7 +37,7 @@ void ArraySystem::shuffle() {
 ComparisonData ArraySystem::sort() {
 
     ComparisonData it = sortSystem->iterate();
-    if (it.status == ComparisonData::Status::SWAP) {
+    if (it.status == SwapStatus::SWAP) {
         float temp = sArray[it.a];
         sArray[it.a] = sArray[it.b];
         sArray[it.b] = temp;

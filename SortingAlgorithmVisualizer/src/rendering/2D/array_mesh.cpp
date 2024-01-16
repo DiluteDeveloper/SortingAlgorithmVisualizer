@@ -8,16 +8,26 @@ void ArrayMesh2D::generateMesh(std::vector<float> sArray) {
 	vertices.clear();
 
 	float horiScale = 2.0f / static_cast<float>(sArray.size()); // Size of each element+distancetonextelement to be able to fit it all on screen comfortably
+
+	float vertScale = (1.0f / (sArray.size() + 1)) * 2.0f;
+
+	float smoothVal = 0;
+
+	if (renderMode == ArrayMeshRenderMode::HARD)
+		smoothVal = vertScale;
 	
 	std::vector<unsigned int> indices;
 	for (size_t i = 0; i < sArray.size(); i++)
 	{
+
+
+
 		float blockX = (i * horiScale) - 1;
 		float marginX = ((i * horiScale) + horiScale) - 1;
 		vertices.push_back({ {blockX, -1} }); // bottom left
 		vertices.push_back({ {marginX, -1} }); // bottom right
-		vertices.push_back({ {marginX, sArray[i]} }); // top right
-		vertices.push_back({ {blockX, sArray[i]} }); // top left
+		vertices.push_back({ {marginX, ((vertScale * sArray[i]) - 1) + vertScale}}); // top right
+		vertices.push_back({ {blockX, ((vertScale * sArray[i]) - 1) + smoothVal} }); // top left
 
 		indices.push_back((i * 4) + 0);
 		indices.push_back((i * 4) + 2);
@@ -49,44 +59,79 @@ void ArrayMesh2D::generateMesh(std::vector<float> sArray) {
 	glVertexArrayAttribBinding(VAO, 0, 0);
 	glVertexArrayAttribBinding(VAO, 1, 0);
 
-	glDeleteBuffers(1, &iBuffer);
+	//glDeleteBuffers(1, &iBuffer);
 }
 void ArrayMesh2D::comparison(const ComparisonData& cd) {
 
-	vertices[(cd.prevA * 4)].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-	vertices[(cd.prevA * 4) + 1].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-	vertices[(cd.prevA * 4) + 2].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-	vertices[(cd.prevA * 4) + 3].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-
-	vertices[(cd.prevB * 4)].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-	vertices[(cd.prevB * 4) + 1].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-	vertices[(cd.prevB * 4) + 2].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-	vertices[(cd.prevB * 4) + 3].colour = glm::vec3(1.0f, 1.0f, 1.0f);
-
-	if (cd.status == ComparisonData::Status::SWAP) {
+	if (cd.status ==SwapStatus::SWAP) {
+		float y3 = vertices[(cd.a * 4) + 3].position.y;
+		float y2 = vertices[(cd.a * 4) + 2].position.y;
 		vertices[(cd.a * 4) + 2].position.y = vertices[(cd.b * 4) + 2].position.y;
-		vertices[(cd.b * 4) + 2].position.y = vertices[(cd.a * 4) + 3].position.y;
-		float y1 = vertices[(cd.a * 4) + 3].position.y;
 		vertices[(cd.a * 4) + 3].position.y = vertices[(cd.b * 4) + 3].position.y;
-		vertices[(cd.b * 4) + 3].position.y = y1;
+		vertices[(cd.b * 4) + 2].position.y = y2;
+		vertices[(cd.b * 4) + 3].position.y = y3;
 
 	}
-	else if (cd.status == ComparisonData::Status::DONE) {
+	else if (cd.status == SwapStatus::DONE) {
 		glNamedBufferSubData(vBuffer, 0, sizeof(Vertex2D) * vertices.size(), &vertices[0]);
 		return;
 	}
 
+	if (cd.paintStatus) {
+		if (cd.status == SwapStatus::SWAP) {
+			vertices[(cd.c * 4)].colour = glm::vec3(0.0f, 1.0f, 0.0f);
+			vertices[(cd.c * 4) + 1].colour = glm::vec3(0.0f, 1.0f, 0.0f);
+		}
+		else {
+			vertices[(cd.c * 4)].colour = glm::vec3(0.0f, 0.5f, 0.5f);
+			vertices[(cd.c * 4) + 1].colour = glm::vec3(0.0f, 0.5f, 0.5f);
+		}
 
 
-	vertices[(cd.a * 4)].colour = glm::vec3(1.0f, 0.0f, 0.0f);
-	vertices[(cd.a * 4) + 1].colour = glm::vec3(1.0f, 0.0f, 0.0f);
-	vertices[(cd.a * 4) + 2].colour = glm::vec3(1.0f, 0.0f, 0.0f);
-	vertices[(cd.a * 4) + 3].colour = glm::vec3(1.0f, 0.0f, 0.0f);
+		vertices[(cd.c * 4) + 2].colour = glm::vec3(0.0f, 0.5f, 0.5f);
+		vertices[(cd.c * 4) + 3].colour = glm::vec3(0.0f, 0.5f, 0.5f);
+	}
 
-	vertices[(cd.b * 4)].colour = glm::vec3(0.0f, 1.0f, 0.0f);
-	vertices[(cd.b * 4) + 1].colour = glm::vec3(0.0f, 1.0f, 0.0f);
-	vertices[(cd.b * 4) + 2].colour = glm::vec3(0.0f, 1.0f, 0.0f);
-	vertices[(cd.b * 4) + 3].colour = glm::vec3(0.0f, 1.0f, 0.0f);
+	if (cd.status == SwapStatus::SWAP) {
+		vertices[(cd.b * 4)].colour = glm::vec3(0.0f, 1.0f, 0.0f);
+		vertices[(cd.b * 4) + 1].colour = glm::vec3(0.0f, 1.0f, 0.0f);
+	}
+	else {
+		vertices[(cd.b * 4)].colour = glm::vec3(1.0f, 0.0f, 0.0f);
+		vertices[(cd.b * 4) + 1].colour = glm::vec3(1.0f, 0.0f, 0.0f);
+	}
+
+	vertices[(cd.b * 4) + 2].colour = glm::vec3(1.0f, 0.0f, 0.0f);
+	vertices[(cd.b * 4) + 3].colour = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	if (cd.status == SwapStatus::SWAP) {
+		vertices[(cd.a * 4)].colour = glm::vec3(0.0f, 1.0f, 0.0f);
+		vertices[(cd.a * 4) + 1].colour = glm::vec3(0.0f, 1.0f, 0.0f);
+	}
+	else {
+		vertices[(cd.a * 4)].colour = glm::vec3(0.0f, 0.0f, 1.0f);
+		vertices[(cd.a * 4) + 1].colour = glm::vec3(0.0f, 0.0f, 1.0f);
+	}
+
+	vertices[(cd.a * 4) + 2].colour = glm::vec3(0.0f, 0.0f, 1.0f);
+	vertices[(cd.a * 4) + 3].colour = glm::vec3(0.0f, 0.0f, 1.0f);
 
 	glNamedBufferSubData(vBuffer, 0, sizeof(Vertex2D) * vertices.size(), &vertices[0]);
+
+	if (cd.paintStatus) {
+		vertices[(cd.c * 4)].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+		vertices[(cd.c * 4) + 1].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+		vertices[(cd.c * 4) + 2].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+		vertices[(cd.c * 4) + 3].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+	}
+
+	vertices[(cd.b * 4)].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+	vertices[(cd.b * 4) + 1].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+	vertices[(cd.b * 4) + 2].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+	vertices[(cd.b * 4) + 3].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	vertices[(cd.a * 4)].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+	vertices[(cd.a * 4) + 1].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+	vertices[(cd.a * 4) + 2].colour = glm::vec3(1.0f, 1.0f, 1.0f);
+	vertices[(cd.a * 4) + 3].colour = glm::vec3(1.0f, 1.0f, 1.0f);
 }
