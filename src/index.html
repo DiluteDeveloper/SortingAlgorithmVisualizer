@@ -1,17 +1,38 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="style.css">
+        <script type="importmap">
+            {
+                "imports": {
+                    "react": "https://esm.sh/react@latest?dev",
+                    "react-dom/client": "https://esm.sh/react-dom@latest/client?dev",
+                    "react/jsx-runtime": "https://esm.sh/react@latest/jsx-runtime?dev"
+                }
+            }
+        </script>
+        <script src="https://unpkg.com/@babel/standalone@latest/babel.min.js"></script>
+
         <title>Page Title</title>
     </head>
     <body>
-        <h1 id="demo">This is a heading</h1>
-        <p id="demo2"></p>
+        <div id="app"></div>
+        <p>test</p>
+        <script type="text/babel" data-type="module" data-presets="react">
+            import React from 'react';
+            import { createRoot } from 'react-dom/client';
 
-        <button type="button" onclick="changeColour()">Try it</button>
-        <button type="button" onclick="main()">main</button>
-        <button type="button" onclick="test()">test</button>
-        <script src="index.js"></script>
+            const domNode = document.getElementById('app');
+            const root = createRoot(domNode);
+            root.render(Header());
+
+            function Header() {
+                let headerTitle = "My Title";
+                return (
+                    <h1>This is my header: {headerTitle}</h1>
+                );
+            }
+
+        </script>
     </body>
 </html>
 
