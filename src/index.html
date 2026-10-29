@@ -23,12 +23,20 @@
 
             const domNode = document.getElementById('app');
             const root = createRoot(domNode);
-            root.render(Header());
+            root.render(HomePage());
 
             function Header() {
                 let headerTitle = "My Title";
                 return (
                     <h1>This is my header: {headerTitle}</h1>
+                );
+            }
+
+            function HomePage() {
+                return (
+                    <div>
+                        <Header />
+                    </div>
                 );
             }
 
